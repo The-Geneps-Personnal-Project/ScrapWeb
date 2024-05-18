@@ -42,17 +42,14 @@ const SiteList: React.FC = () => {
 const sites = [
     {
         name: "Site 1",
-        lastChecked: "2024-05-01",
         url: "https://site1.com",
-        mangas: ["Manga A", "Manga B"],
+        mangas: ["Manga A", "Manga B", "Manga C", "Manga D", "Manga ENGEHGERHGKEJRHGLERHLJegnekrjgerkjghelrgjerlghej", "Manga F", "Manga G", "Manga H", "Manga I", "Manga J", "Manga K", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L", "Manga L"],
     },
     {
         name: "Site 2",
-        lastChecked: "2024-04-28",
         url: "https://site2.com",
-        mangas: ["Manga C", "Manga D"],
+        mangas: ["Manga M", "Manga N", "Manga O", "Manga P", "Manga Q", "Manga R", "Manga S", "Manga T", "Manga U", "Manga V"],
     },
-    // Add more sites as needed
 ];
 
 export default SiteList;

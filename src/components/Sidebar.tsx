@@ -18,9 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleSidebar }) => {
                     <button
                         onClick={onToggleSidebar}
                         className="text-xl bg-sidebar-color p-2 rounded focus:outline-none mt-16"
-                    >
-                        <FontAwesomeIcon icon={faBars} />
-                    </button>
+                    ></button>
                 ) : (
                     <>
                         <h1 className="text-xl mb-4 mt-16"></h1>

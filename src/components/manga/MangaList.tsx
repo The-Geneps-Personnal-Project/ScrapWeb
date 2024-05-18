@@ -13,7 +13,6 @@ const MangaList: React.FC = () => {
     const [availableSites, setAvailableSites] = useState<string[]>([]);
 
     useEffect(() => {
-        // Extract unique tags and sites from manga data
         const tags = Array.from(new Set(mangas.flatMap(manga => manga.genres)));
         setAvailableTags(tags);
 
