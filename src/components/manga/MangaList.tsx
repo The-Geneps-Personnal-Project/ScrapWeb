@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import MangaItem from "./MangaItem";
 import SearchAndFilter from "./SearchAndFilter";
+import { getAllMangas } from "../../services/mangas";
+import { MangaInfo } from "../../types/types";
 
 const MangaList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -8,17 +10,28 @@ const MangaList: React.FC = () => {
     const [date, setDate] = useState("");
     const [chapters, setChapters] = useState("");
     const [selectedSite, setSelectedSite] = useState("");
-    const [filteredMangas, setFilteredMangas] = useState(mangas);
+    const [mangas, setMangas] = useState<MangaInfo[]>([]);
+    const [filteredMangas, setFilteredMangas] = useState<MangaInfo[]>([]);
     const [availableTags, setAvailableTags] = useState<string[]>([]);
     const [availableSites, setAvailableSites] = useState<string[]>([]);
 
     useEffect(() => {
-        const tags = Array.from(new Set(mangas.flatMap(manga => manga.genres)));
-        setAvailableTags(tags);
+        const fetchMangas = async () => {
+            const data = await getAllMangas();
+            setMangas(data);
+            setFilteredMangas(data);
 
-        const sites = Array.from(new Set(mangas.flatMap(manga => manga.sites)));
-        setAvailableSites(sites);
+            const tags = Array.from(new Set(data.flatMap(manga => manga.infos?.tags.map(tag => tag.name) || [])));
+            setAvailableTags(tags);
 
+            const sites = Array.from(new Set(data.flatMap(manga => manga.sites.map(siteInfo => siteInfo.site))));
+            setAvailableSites(sites);
+        };
+
+        fetchMangas();
+    }, []);
+
+    useEffect(() => {
         applyFilters();
     }, [searchTerm, selectedTag, date, chapters, selectedSite]);
 
@@ -26,35 +39,37 @@ const MangaList: React.FC = () => {
         let filtered = mangas;
 
         if (searchTerm) {
-            filtered = filtered.filter(manga => manga.title.toLowerCase().includes(searchTerm.toLowerCase()));
+            filtered = filtered.filter(manga => manga.name.toLowerCase().includes(searchTerm.toLowerCase()));
         }
 
         if (selectedTag) {
-            filtered = filtered.filter(manga => manga.genres.includes(selectedTag));
+            filtered = filtered.filter(manga => manga.infos?.tags.some(tag => tag.name === selectedTag));
         }
 
         if (date) {
             filtered = filtered.sort((a, b) => {
+                const dateA = a.last_update ? new Date(a.last_update).getTime() : 0;
+                const dateB = b.last_update ? new Date(b.last_update).getTime() : 0;
                 if (date === "most-recent") {
-                    return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+                    return dateB - dateA;
                 } else {
-                    return new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime();
+                    return dateA - dateB;
                 }
             });
         }
 
         if (chapters) {
             filtered = filtered.sort((a, b) => {
-                if (chapters === "most-chapters") {
-                    return b.currentChapter - a.currentChapter;
+                if (chapters !== "most-chapters") {
+                    return parseFloat(b.chapter) - parseFloat(a.chapter);
                 } else {
-                    return a.currentChapter - b.currentChapter;
+                    return parseFloat(a.chapter) - parseFloat(b.chapter);
                 }
             });
         }
 
         if (selectedSite) {
-            filtered = filtered.filter(manga => manga.sites.includes(selectedSite));
+            filtered = filtered.filter(manga => manga.sites.some(siteInfo => siteInfo.site === selectedSite));
         }
 
         setFilteredMangas(filtered);
@@ -83,39 +98,16 @@ const MangaList: React.FC = () => {
             {filteredMangas.map((manga, index) => (
                 <MangaItem
                     key={index}
-                    title={manga.title}
-                    currentChapter={manga.currentChapter}
-                    lastUpdated={manga.lastUpdated}
+                    name={manga.name}
+                    chapter={manga.chapter}
+                    last_update={manga.last_update || "Unknown"} // Use a default string if last_update is undefined
                     sites={manga.sites}
-                    thumbnail={manga.thumbnail}
-                    description={manga.description}
-                    genres={manga.genres}
+                    infos={manga.infos}
+                    anilist_id={manga.anilist_id}
                 />
             ))}
         </div>
     );
 };
-
-const mangas = [
-    {
-        title: "Manga 1",
-        currentChapter: 10,
-        lastUpdated: "2024-05-01",
-        sites: ["Site A", "Site B"],
-        thumbnail: "https://via.placeholder.com/128x192",
-        description: "This is a short description of Manga 1. It gives an overview of the plot and main characters.",
-        genres: ["Action", "Adventure"],
-    },
-    {
-        title: "Manga 2",
-        currentChapter: 5,
-        lastUpdated: "2024-04-28",
-        sites: ["Site C"],
-        thumbnail: "https://via.placeholder.com/128x192",
-        description: "This is a short description of Manga 2. It gives an overview of the plot and main characters.",
-        genres: ["Drama", "Fantasy"],
-    },
-    // Add more mangas as needed
-];
 
 export default MangaList;

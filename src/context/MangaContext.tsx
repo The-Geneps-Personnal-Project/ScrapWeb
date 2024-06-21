@@ -7,6 +7,12 @@ interface Manga {
     currentChapter: string;
     sites: string[];
     alert: boolean;
+    lastUpdate: string;
+    infos?: {
+        description: { medium: string};
+        image: { medium: string};
+        tags: { name: string }[];
+    }
 }
 
 interface MangaContextProps {

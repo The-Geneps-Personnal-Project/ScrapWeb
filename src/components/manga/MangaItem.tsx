@@ -1,37 +1,31 @@
 import React, { useState } from "react";
+import { MangaInfo } from "../../types/types";
 
-interface MangaItemProps {
-    title: string;
-    currentChapter: number;
-    lastUpdated: string;
-    sites: string[];
-    thumbnail: string;
-    description: string;
-    genres: string[];
-}
-
-const MangaItem: React.FC<MangaItemProps> = ({
-    title,
-    currentChapter,
-    lastUpdated,
+const MangaItem: React.FC<MangaInfo> = ({
     sites,
-    thumbnail,
-    description,
-    genres,
+    anilist_id,
+    chapter,
+    alert,
+    name,
+    last_update,
+    infos,
 }) => {
+    const defaultImage = "https://via.placeholder.com/128x192"
     const [isExpanded, setIsExpanded] = useState(false);
 
     const toggleExpand = () => {
         setIsExpanded(!isExpanded);
     };
 
+    console.log(infos?.coverImage)
+
     return (
         <div className="bg-gray-700 text-white p-4 mb-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-xl font-semibold">{title}</h3>
-                    <p className="text-sm text-gray-300">Current Chapter: {currentChapter}</p>
-                    <p className="text-sm text-gray-300">Last Updated: {lastUpdated}</p>
+                    <h3 className="text-xl font-semibold">{name}</h3>
+                    <p className="text-m text-gray-300">Current Chapter: {chapter}</p>
+                    <p className="text-m text-gray-300">Last Updated: {last_update}</p>
                 </div>
                 <button
                     onClick={toggleExpand}
@@ -44,29 +38,33 @@ const MangaItem: React.FC<MangaItemProps> = ({
                 <div className="mt-4">
                     <div className="flex">
                         <img
-                            src={thumbnail}
-                            alt={`${title} Thumbnail`}
+                            src={infos?.coverImage || defaultImage}
+                            alt={`${name} Thumbnail`}
                             className="w-32 h-48 object-cover mr-4 rounded"
                         />
                         <div>
-                            <p className="text-sm text-gray-300 mb-2">{description}</p>
+                            <p className="text-m text-gray-300 mb-2">{infos?.description}</p>
                             <div className="mb-4">
-                                {genres.map((genre, index) => (
+                                {infos?.tags.map((genre, index) => (
                                     <span
                                         key={index}
                                         className="bg-gray-600 text-gray-300 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded"
                                     >
-                                        {genre}
+                                        {genre.name}
                                     </span>
                                 ))}
                             </div>
                             <h4 className="text-lg font-medium">Sites</h4>
                             <ul className="list-disc list-inside">
-                                {sites.map((site, index) => (
-                                    <li key={index} className="text-gray-300">
-                                        {site}
-                                    </li>
-                                ))}
+                                {sites.length > 0 ? (
+                                    sites.map((site, index) => (
+                                        <li key={index} className="text-gray-300">
+                                            {site.site}
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li className="text-gray-300">No sites</li>
+                                )}
                             </ul>
                             <div className="mt-4 flex">
                                 <button className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors duration-300">
