@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import MangaItem from "./MangaItem";
 import SearchAndFilter from "./SearchAndFilter";
-import { getAllMangas } from "../../services/mangas";
-import { MangaInfo } from "../../types/types";
+import { getAllMangas } from "services/mangas";
+import { MangaInfo } from "types/types";
 
 const MangaList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -17,11 +17,11 @@ const MangaList: React.FC = () => {
 
     useEffect(() => {
         const fetchMangas = async () => {
-            const data = await getAllMangas();
+            const data = (await getAllMangas()).filter(manga => manga.infos?.description && manga.infos?.tags);
             setMangas(data);
             setFilteredMangas(data);
 
-            const tags = Array.from(new Set(data.flatMap(manga => manga.infos?.tags.map(tag => tag.name) || [])));
+            const tags = Array.from(new Set(data.flatMap(manga => manga.infos?.tags?.map(tag => tag.name) || [])));
             setAvailableTags(tags);
 
             const sites = Array.from(new Set(data.flatMap(manga => manga.sites.map(siteInfo => siteInfo.site))));
@@ -33,7 +33,7 @@ const MangaList: React.FC = () => {
 
     useEffect(() => {
         applyFilters();
-    }, [searchTerm, selectedTag, date, chapters, selectedSite]);
+    }, [mangas, searchTerm, selectedTag, date, chapters, selectedSite]);
 
     const applyFilters = () => {
         let filtered = mangas;
@@ -43,7 +43,7 @@ const MangaList: React.FC = () => {
         }
 
         if (selectedTag) {
-            filtered = filtered.filter(manga => manga.infos?.tags.some(tag => tag.name === selectedTag));
+            filtered = filtered.filter(manga => manga.infos?.tags?.some(tag => tag.name === selectedTag));
         }
 
         if (date) {
@@ -62,9 +62,9 @@ const MangaList: React.FC = () => {
             filtered = filtered.sort((a, b) => {
                 if (chapters !== "most-chapters") {
                     return parseFloat(b.chapter) - parseFloat(a.chapter);
-                } else {
+                } else if (chapters === "most-chapters") {
                     return parseFloat(a.chapter) - parseFloat(b.chapter);
-                }
+                } else return 0;
             });
         }
 
@@ -98,12 +98,13 @@ const MangaList: React.FC = () => {
             {filteredMangas.map((manga, index) => (
                 <MangaItem
                     key={index}
-                    name={manga.name}
-                    chapter={manga.chapter}
-                    last_update={manga.last_update || "Unknown"} // Use a default string if last_update is undefined
-                    sites={manga.sites}
-                    infos={manga.infos}
-                    anilist_id={manga.anilist_id}
+                    {...manga}
+                    onDelete={(deletedManga: MangaInfo) =>
+                        setMangas(prevMangas => prevMangas.filter(m => m.name !== deletedManga.name))
+                    }
+                    onEdit={(editedManga: MangaInfo) =>
+                        setMangas(prevMangas => prevMangas.map(m => (m.name === editedManga.name ? editedManga : m)))
+                    }
                 />
             ))}
         </div>

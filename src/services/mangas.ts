@@ -1,18 +1,19 @@
-import axios from 'axios'
-import { MangaInfo, SiteInfo } from '../types/types'
+import axios from "axios";
+import { MangaInfo, SiteInfo } from "types/types";
+import { getFromApi, putToApi, deleteFromApi } from "./helper";
 
 const api = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080",
     timeout: 10000,
     headers: {
-        'Content-Type': 'application/json',
-    }
-})
+        "Content-Type": "application/json",
+    },
+});
 
 const cleanDescription = (description: string) => {
-    if (!description) return '';
-    const strippedDescription = description.replace(/<\/?[^>]+(>|$)/g, '');
-    const cleanedDescription = strippedDescription.replace(/\(Source:.*\)$/, '');
+    if (!description) return "";
+    const strippedDescription = description.replace(/<\/?[^>]+(>|$)/g, "");
+    const cleanedDescription = strippedDescription.replace(/\(Source:.*\)$/, "");
     return cleanedDescription.trim();
 };
 
@@ -20,90 +21,93 @@ const cleanDescription = (description: string) => {
 
 export async function getAllMangas(): Promise<MangaInfo[]> {
     try {
-        const response = await api.get('/mangas')
-        return response.data.map((manga: MangaInfo) => {
+        const response: MangaInfo[] = await getFromApi("mangas");
+        return response.map((manga: MangaInfo) => {
             return {
                 ...manga,
                 infos: {
                     ...manga.infos,
-                    description: cleanDescription(manga.infos?.description || ''),
+                    description: cleanDescription(manga.infos?.description || ""),
                 },
             };
-        })
+        });
     } catch (error) {
-        console.log(error)
-        throw new Error("Failed to fetch mangas")
+        throw new Error("Failed to fetch mangas");
     }
 }
 
 export async function getMangaByName(name: string): Promise<MangaInfo> {
     try {
-        const response = await api.get(`/mangas/${name}`)
-        return response.data
+        const response = await api.get(`mangas/${name}`);
+        return response.data;
     } catch (error) {
-        throw new Error("Failed to fetch manga")
+        throw new Error("Failed to fetch manga");
     }
 }
 
 export async function getMangaFromSite(name: string): Promise<MangaInfo> {
     try {
-        const response = await api.get(`/mangas/site/${name}`)
-        return response.data
+        const response = await api.get(`mangas/site/${name}`);
+        return response.data;
     } catch (error) {
-        throw new Error("Failed to fetch manga")
+        throw new Error("Failed to fetch manga");
     }
 }
 
-export async function addManga(manga: MangaInfo): Promise<MangaInfo> {
+export async function addMangaService(manga: MangaInfo): Promise<MangaInfo> {
     try {
-        const response = await api.post('/mangas', manga)
-        return response.data
+        const response = await api.post("mangas", manga);
+        return response.data;
     } catch (error) {
-        throw new Error("Failed to add manga")
+        throw new Error("Failed to add manga");
     }
 }
 
-export async function addSiteToManga(name: string, site: SiteInfo): Promise<MangaInfo> {
+export async function addSiteToMangaService(name: string, site: SiteInfo): Promise<MangaInfo> {
     try {
-        const response = await api.post(`/mangas/site`, { name, site})
-        return response.data
+        const response = await api.post(`mangas/site`, { name, site });
+        return response.data;
     } catch (error) {
-        throw new Error("Failed to add site to manga")
+        throw new Error("Failed to add site to manga");
     }
 }
 
-export async function updateManga(name: string, manga: MangaInfo): Promise<MangaInfo> {
+export async function updateMangaService(manga: MangaInfo): Promise<MangaInfo> {
     try {
-        const response = await api.put(`/mangas/`, manga)
-        return response.data
+        console.log(manga);
+        const response = await putToApi(`mangas`, manga);
+        return response as MangaInfo;
     } catch (error) {
-        throw new Error("Failed to update manga")
+        throw new Error("Failed to update manga");
     }
 }
 
-export async function updateMangaChapter(name: string, chapter: string, last_update: string): Promise<MangaInfo> {
+export async function updateMangaChapterService(
+    name: string,
+    chapter: string,
+    last_update: string
+): Promise<MangaInfo> {
     try {
-        const response = await api.put(`/mangas/chapter`, { name, chapter, last_update })
-        return response.data
+        const response = await api.put(`mangas/chapter`, { name, chapter, last_update });
+        return response.data;
     } catch (error) {
-        throw new Error("Failed to update manga chapter")
+        throw new Error("Failed to update manga chapter");
     }
 }
 
-export async function deleteSiteFromManga(name: string, site: string): Promise<MangaInfo> {
+export async function deleteSiteFromMangaService(manga: string, site: string): Promise<MangaInfo> {
     try {
-        const response = await api.delete(`/mangas/site`, { data: { name, site }})
-        return response.data
+        const response = await deleteFromApi(`mangas/site`, { manga, site });
+        return response as MangaInfo;
     } catch (error) {
-        throw new Error("Failed to delete site from manga")
+        throw new Error("Failed to delete site from manga");
     }
-
 }
 
-export async function deleteManga(name: string): Promise<void> {
+export async function deleteMangaService(name: string): Promise<void> {
     try {
-        await api.delete(`/mangas/${name}`)
+        deleteFromApi(`mangas`, { name });
     } catch (error) {
-        throw new Error("Failed to delete manga")
+        throw new Error("Failed to delete manga");
     }
 }
