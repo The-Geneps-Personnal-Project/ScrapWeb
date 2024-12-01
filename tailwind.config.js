@@ -10,6 +10,8 @@ module.exports = {
         'header-color': '#232323',
         'background-color': '#2B3032',
         'list-color': '#4b5563'
+      },
+      backgroundImage: {
       }
     },
   },

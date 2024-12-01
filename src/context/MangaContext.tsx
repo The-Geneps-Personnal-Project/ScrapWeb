@@ -1,20 +1,12 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
-
-interface Manga {
-    id: string;
-    name: string;
-    anilistId: string;
-    currentChapter: string;
-    sites: string[];
-    alert: boolean;
-}
-
-interface MangaContextProps {
-    mangas: Manga[];
-    addManga: (manga: Manga) => void;
-    updateManga: (id: string, updatedManga: Manga) => void;
-    deleteManga: (id: string) => void;
-}
+import { MangaContextProps, MangaInfo, SiteInfo } from "types/types";
+import {
+    addMangaService,
+    addSiteToMangaService,
+    deleteMangaService,
+    deleteSiteFromMangaService,
+    updateMangaService,
+} from "services/mangas";
 
 const MangaContext = createContext<MangaContextProps | undefined>(undefined);
 
@@ -27,21 +19,50 @@ export const useMangaContext = () => {
 };
 
 export const MangaProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [mangas, setMangas] = useState<Manga[]>([]);
+    const [mangas, setMangas] = useState<MangaInfo[]>([]);
 
-    const addManga = (manga: Manga) => {
-        setMangas([...mangas, manga]);
+    const addManga = async (manga: MangaInfo): Promise<MangaInfo> => {
+        try {
+            const newManga = await addMangaService(manga);
+            setMangas([...mangas, newManga]);
+            return newManga;
+        } catch (error) {
+            console.error("Failed to add manga:", error);
+            throw error;
+        }
     };
 
-    const updateManga = (id: string, updatedManga: Manga) => {
-        setMangas(mangas.map(m => (m.id === id ? updatedManga : m)));
+    const updateManga = async (updatedManga: MangaInfo) => {
+        try {
+            const updated = await updateMangaService(updatedManga);
+            setMangas(mangas.map(m => (m.id === updatedManga.id ? updated : m)));
+        } catch (error) {
+            console.error("Failed to update manga:", error);
+        }
     };
 
-    const deleteManga = (id: string) => {
-        setMangas(mangas.filter(m => m.id !== id));
+    const updateMangaSites = async (name: string, oldSites: SiteInfo[], newSites: SiteInfo[]) => {
+        const sitesToAdd = newSites.filter(site => !oldSites.some(s => s.site === site.site));
+        const sitesToDelete = oldSites.filter(site => !newSites.some(s => s.site === site.site));
+
+        const promises = sitesToAdd.map(site => addSiteToMangaService(site.site, site));
+        promises.push(...sitesToDelete.map(site => deleteSiteFromMangaService(name, site.site)));
+
+        await Promise.all(promises);
+    };
+
+    const deleteManga = async (name: string) => {
+        try {
+            await deleteMangaService(name);
+            setMangas(mangas.filter(m => m.name !== name));
+        } catch (error) {
+            console.error("Failed to delete manga:", error);
+        }
     };
 
     return (
-        <MangaContext.Provider value={{ mangas, addManga, updateManga, deleteManga }}>{children}</MangaContext.Provider>
+        <MangaContext.Provider value={{ mangas, addManga, updateManga, updateMangaSites, deleteManga }}>
+            {children}
+        </MangaContext.Provider>
     );
 };

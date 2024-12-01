@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { SearchAndFilterMangaProps } from "types/types";
 
-interface SearchAndFilterProps {
-    onSearch: (searchTerm: string) => void;
-    onFilter: (filters: { tag: string; date: string; chapters: string; site: string }) => void;
-    availableTags: string[];
-    availableSites: string[];
-}
-
-const SearchAndFilter: React.FC<SearchAndFilterProps> = ({ onSearch, onFilter, availableTags, availableSites }) => {
+const SearchAndFilter: React.FC<SearchAndFilterMangaProps> = ({
+    onSearch,
+    onFilter,
+    availableTags,
+    availableSites,
+}) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedTag, setSelectedTag] = useState("");
     const [date, setDate] = useState("");
@@ -121,7 +120,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({ onSearch, onFilter, a
                     id="search"
                     value={searchTerm}
                     onChange={handleSearch}
-                    className="bg-gray-700 text-white p-2 rounded w-full"
+                    className="bg-gray-700 text-white p-2 rounded"
                     placeholder="Search by name..."
                 />
             </div>
